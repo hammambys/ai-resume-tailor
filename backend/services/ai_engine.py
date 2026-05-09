@@ -1,7 +1,9 @@
 import os
 import groq
 
-def tailor_resume(resume_text: str, job_description: str) -> str:
+import json
+
+def tailor_resume(resume_text: str, job_description: str) -> dict:
     api_key = os.environ.get("GROQ_API_KEY")
     if not api_key:
         raise ValueError("GROQ_API_KEY environment variable is not set")
@@ -9,35 +11,52 @@ def tailor_resume(resume_text: str, job_description: str) -> str:
     client = groq.Groq(api_key=api_key)
     
     prompt = f"""
-    You are an expert ATS (Applicant Tracking System) optimizer and professional resume writer.
-    Your task is to tailor the provided Resume to match the provided Job Description.
+    Tailor this Resume for the Job Description.
+    Return the response as a JSON object with the following keys:
+    - "name": Full name.
+    - "contact": Contact information (email, phone, LinkedIn, etc.).
+    - "summary": A professional summary.
+    - "experience": Work experience details in Markdown bullet points.
+    - "education": Education details.
+    - "skills": List of relevant skills.
 
-    Constraints:
-    - DO NOT hallucinate or fabricate any experience, skills, or education.
-    - ONLY reorder, refine, and optimize the existing content to highlight relevance.
-    - Inject relevant keywords from the job description naturally, provided the applicant actually possesses those skills based on the original resume.
-    - Keep the output professional and well-structured.
-    - Use Markdown format with clear headings (e.g., Summary, Experience, Skills, Education).
-    - Use bullet points for experience. Keep descriptions concise and impactful.
+    Rules:
+    - No hallucinations. Use only provided info.
+    - Match JD keywords naturally.
+    - Use Markdown for formatting within the fields (e.g., bullet points for experience).
+    - No intro/outro text. ONLY JSON.
 
-    Original Resume:
-    {resume_text}
-
-    Job Description:
-    {job_description}
-
-    Tailored Resume (Markdown format):
+    Resume: {resume_text}
+    JD: {job_description}
     """
 
     chat_completion = client.chat.completions.create(
         messages=[
+            {
+                "role": "system",
+                "content": "You are a professional resume writer. You must return only valid JSON."
+            },
             {
                 "role": "user",
                 "content": prompt,
             }
         ],
         model=os.environ.get("GROQ_MODEL"),
-        temperature=0.3, # Low temperature for more factual/focused responses
+        temperature=0.3,
+        response_format={"type": "json_object"}
     )
 
-    return chat_completion.choices[0].message.content
+    try:
+        content = chat_completion.choices[0].message.content
+        return json.loads(content)
+    except (json.JSONDecodeError, KeyError, IndexError) as e:
+        print(f"Error parsing AI response: {e}")
+        # Fallback: wrap the raw content in a generic structure if it fails
+        return {
+            "name": "Parsed Error",
+            "contact": "",
+            "summary": "There was an error parsing the AI response.",
+            "experience": content,
+            "education": "",
+            "skills": ""
+        }

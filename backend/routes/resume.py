@@ -1,9 +1,7 @@
-from flask import Blueprint, request, jsonify, send_file
+from flask import Blueprint, request, jsonify
 from services.file_parser import parse_file
 from services.text_cleaner import clean_text
 from services.ai_engine import tailor_resume
-from services.pdf_generator import generate_pdf
-import io
 
 resume_bp = Blueprint('resume', __name__)
 
@@ -39,23 +37,3 @@ def tailor():
     except Exception as e:
         print(f"Error processing request: {str(e)}")
         return jsonify({'error': 'An internal error occurred during processing.'}), 500
-
-@resume_bp.route('/generate-pdf', methods=['POST'])
-def download_pdf():
-    try:
-        data = request.json
-        text = data.get('text')
-        if not text:
-            return jsonify({'error': 'No text provided'}), 400
-            
-        pdf_buffer = generate_pdf(text)
-        
-        return send_file(
-            pdf_buffer,
-            as_attachment=True,
-            download_name='Tailored_Resume.pdf',
-            mimetype='application/pdf'
-        )
-    except Exception as e:
-        print(f"Error generating PDF: {str(e)}")
-        return jsonify({'error': 'Failed to generate PDF'}), 500

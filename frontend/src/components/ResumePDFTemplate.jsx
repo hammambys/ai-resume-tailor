@@ -1,0 +1,176 @@
+import React from 'react';
+import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
+
+// Create styles for the PDF
+const styles = StyleSheet.create({
+  page: {
+    flexDirection: 'column',
+    backgroundColor: '#FFFFFF',
+    padding: 30,
+    fontFamily: 'Helvetica',
+  },
+  header: {
+    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#111111',
+    borderBottomStyle: 'solid',
+    paddingBottom: 10,
+  },
+  name: {
+    fontSize: 24,
+    fontFamily: 'Helvetica-Bold',
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+  contact: {
+    fontSize: 10,
+    textAlign: 'center',
+    color: '#333333',
+  },
+  section: {
+    marginBottom: 15,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontFamily: 'Helvetica-Bold',
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#CCCCCC',
+    borderBottomStyle: 'solid',
+    paddingBottom: 2,
+    textTransform: 'uppercase',
+  },
+  content: {
+    fontSize: 10,
+    lineHeight: 1.5,
+  },
+  bulletPoint: {
+    flexDirection: 'row',
+    marginBottom: 4,
+  },
+  bullet: {
+    width: 15,
+    fontSize: 10,
+  },
+  bulletText: {
+    flex: 1,
+    fontSize: 10,
+    lineHeight: 1.5,
+  }
+});
+
+// Helper to parse simple markdown lists
+const renderMarkdownText = (text) => {
+  if (!text) return null;
+  
+  const lines = text.split('\n');
+  return lines.map((line, index) => {
+    const trimmed = line.trim();
+    if (!trimmed) return null;
+    
+    // Check if it's a list item
+    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      return (
+        <View key={index} style={styles.bulletPoint}>
+          <Text style={styles.bullet}>•</Text>
+          <Text style={styles.bulletText}>{trimmed.substring(2)}</Text>
+        </View>
+      );
+    }
+    
+    // Check if it's a bold header (like **Job Title**)
+    // We do a simple fallback by just removing ** for now, 
+    // or rendering it in a View if we want bold.
+    let content = trimmed;
+    content = content.replace(/\*\*(.*?)\*\*/g, '$1'); // Strip bold for simplicity in basic text
+    content = content.replace(/__(.*?)__/g, '$1');
+    content = content.replace(/\*(.*?)\*/g, '$1');
+    
+    // Ignore markdown headers inside sections to keep it clean
+    if (trimmed.startsWith('### ')) {
+      return <Text key={index} style={{...styles.content, fontFamily: 'Helvetica-Bold', marginTop: 5}}>{trimmed.substring(4)}</Text>;
+    }
+    if (trimmed.startsWith('## ')) {
+        return <Text key={index} style={{...styles.content, fontFamily: 'Helvetica-Bold', marginTop: 8}}>{trimmed.substring(3)}</Text>;
+    }
+    if (trimmed.startsWith('# ')) return null; // handled in titles
+    
+    return <Text key={index} style={styles.content}>{content}</Text>;
+  });
+};
+
+const ensureString = (val) => {
+  if (Array.isArray(val)) return val.join(', ');
+  if (typeof val === 'object' && val !== null) {
+    return Object.values(val).filter(Boolean).join(' | ');
+  }
+  return String(val || '');
+};
+
+const ResumePDFTemplate = ({ resumeData }) => {
+  if (!resumeData) return null;
+
+  // Handle case where we still got a string (legacy)
+  const isString = typeof resumeData === 'string';
+  if (isString) {
+      return (
+        <Document>
+          <Page size="A4" style={styles.page}>
+            <View style={styles.section}>
+                {renderMarkdownText(resumeData)}
+            </View>
+          </Page>
+        </Document>
+      );
+  }
+
+  const { name, contact, summary, experience, education, skills } = resumeData;
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.name}>{ensureString(name)}</Text>
+          <Text style={styles.contact}>{ensureString(contact).replace(/\n/g, ' | ')}</Text>
+        </View>
+
+        {/* Summary */}
+        {summary && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Professional Summary</Text>
+            <Text style={styles.content}>{ensureString(summary)}</Text>
+          </View>
+        )}
+
+        {/* Experience */}
+        {experience && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Experience</Text>
+            {renderMarkdownText(ensureString(experience))}
+          </View>
+        )}
+
+        {/* Education */}
+        {education && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Education</Text>
+            {renderMarkdownText(ensureString(education))}
+          </View>
+        )}
+
+        {/* Skills */}
+        {skills && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Skills</Text>
+            <Text style={styles.content}>{ensureString(skills)}</Text>
+          </View>
+        )}
+
+      </Page>
+    </Document>
+  );
+};
+
+export default ResumePDFTemplate;
