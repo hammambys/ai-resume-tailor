@@ -10,11 +10,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica',
   },
   header: {
-    marginBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#111111',
-    borderBottomStyle: 'solid',
-    paddingBottom: 10,
+    marginBottom: 15,
   },
   name: {
     fontSize: 24,
@@ -154,7 +150,7 @@ const ResumePDFTemplate = ({ resumeData }) => {
                 <View key={idx} style={{ marginBottom: 12 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
                     <Text style={{ ...styles.content, fontFamily: 'Helvetica-Bold' }}>
-                      {item.role || item.title} {item.company ? `at ${item.company}` : ''}
+                      {item.role || item.title} {item.company ? `, ${item.company}` : ''}
                     </Text>
                     <Text style={{ ...styles.content, color: '#666666' }}>
                       {[item.location, item.duration].filter(Boolean).join(' | ')}
