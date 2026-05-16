@@ -62,12 +62,12 @@ const styles = StyleSheet.create({
 // Helper to parse simple markdown lists
 const renderMarkdownText = (text) => {
   if (!text) return null;
-  
+
   const lines = text.split('\n');
   return lines.map((line, index) => {
     const trimmed = line.trim();
     if (!trimmed) return null;
-    
+
     // Check if it's a list item
     if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
       return (
@@ -77,7 +77,7 @@ const renderMarkdownText = (text) => {
         </View>
       );
     }
-    
+
     // Check if it's a bold header (like **Job Title**)
     // We do a simple fallback by just removing ** for now, 
     // or rendering it in a View if we want bold.
@@ -85,16 +85,16 @@ const renderMarkdownText = (text) => {
     content = content.replace(/\*\*(.*?)\*\*/g, '$1'); // Strip bold for simplicity in basic text
     content = content.replace(/__(.*?)__/g, '$1');
     content = content.replace(/\*(.*?)\*/g, '$1');
-    
+
     // Ignore markdown headers inside sections to keep it clean
     if (trimmed.startsWith('### ')) {
-      return <Text key={index} style={{...styles.content, fontFamily: 'Helvetica-Bold', marginTop: 5}}>{trimmed.substring(4)}</Text>;
+      return <Text key={index} style={{ ...styles.content, fontFamily: 'Helvetica-Bold', marginTop: 5 }}>{trimmed.substring(4)}</Text>;
     }
     if (trimmed.startsWith('## ')) {
-        return <Text key={index} style={{...styles.content, fontFamily: 'Helvetica-Bold', marginTop: 8}}>{trimmed.substring(3)}</Text>;
+      return <Text key={index} style={{ ...styles.content, fontFamily: 'Helvetica-Bold', marginTop: 8 }}>{trimmed.substring(3)}</Text>;
     }
     if (trimmed.startsWith('# ')) return null; // handled in titles
-    
+
     return <Text key={index} style={styles.content}>{content}</Text>;
   });
 };
@@ -113,23 +113,23 @@ const ResumePDFTemplate = ({ resumeData }) => {
   // Handle case where we still got a string (legacy)
   const isString = typeof resumeData === 'string';
   if (isString) {
-      return (
-        <Document>
-          <Page size="A4" style={styles.page}>
-            <View style={styles.section}>
-                {renderMarkdownText(resumeData)}
-            </View>
-          </Page>
-        </Document>
-      );
+    return (
+      <Document>
+        <Page size="A4" style={styles.page}>
+          <View style={styles.section}>
+            {renderMarkdownText(resumeData)}
+          </View>
+        </Page>
+      </Document>
+    );
   }
 
-  const { name, contact, summary, experience, education, skills } = resumeData;
+  const { name, contact, summary, experience, education, skills, projects } = resumeData;
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        
+
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.name}>{ensureString(name)}</Text>
@@ -202,7 +202,39 @@ const ResumePDFTemplate = ({ resumeData }) => {
             }) : renderMarkdownText(ensureString(education))}
           </View>
         )}
-
+        {/* Projects */}
+        {projects && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Projects</Text>
+            {Array.isArray(projects) ? projects.map((item, idx) => {
+              if (typeof item === 'string') return renderMarkdownText(item);
+              return (
+                <View key={idx} style={{ marginBottom: 8 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
+                    <Text style={{ ...styles.content, fontFamily: 'Helvetica-Bold' }}>
+                      {item.name}
+                    </Text>
+                    <Text style={{ ...styles.content, color: '#666666' }}>
+                      {[item.duration].filter(Boolean).join(' | ')}
+                    </Text>
+                  </View>
+                  {item.description && Array.isArray(item.description) ? (
+                    item.description.map((desc, dIdx) => (
+                      <View key={dIdx} style={styles.bulletPoint}>
+                        <Text style={styles.bullet}>•</Text>
+                        <Text style={styles.bulletText}>{desc}</Text>
+                      </View>
+                    ))
+                  ) : item.description ? (
+                    <Text style={{ ...styles.content, color: '#333333' }}>
+                      {item.description}
+                    </Text>
+                  ) : null}
+                </View>
+              );
+            }) : renderMarkdownText(ensureString(projects))}
+          </View>
+        )}
         {/* Skills */}
         {skills && (
           <View style={styles.section}>
@@ -210,7 +242,6 @@ const ResumePDFTemplate = ({ resumeData }) => {
             <Text style={styles.content}>{ensureString(skills)}</Text>
           </View>
         )}
-
       </Page>
     </Document>
   );

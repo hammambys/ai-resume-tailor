@@ -15,10 +15,11 @@ def tailor_resume(resume_text: str, job_description: str) -> dict:
     Return the response as a JSON object with the following keys:
     - "name": Full name.
     - "contact": Contact information (email, phone, LinkedIn, etc.).
-    - "summary": A professional summary.
+    - "summary": Rewritten summary based on the job description.
     - "experience": List of work experiences. Each object must have "company", "role", "location", "duration", and "responsibilities" (list of strings).
     - "education": List of education details. Each object must have "institution", "degree", "location", and "duration".
-    - "skills": List of relevant skills.
+    - "skills": List of relevant skills (at least 10 skills required).
+    - "projects": List of projects. Choose at most 3 most relevant projects. Each object must have "name" and "description" (list of strings).
 
     Rules:
     - No hallucinations. Use only provided info.
@@ -57,5 +58,6 @@ def tailor_resume(resume_text: str, job_description: str) -> dict:
             "summary": "There was an error parsing the AI response.",
             "experience": content,
             "education": "",
-            "skills": ""
+            "skills": "",
+            "projects": ""
         }
