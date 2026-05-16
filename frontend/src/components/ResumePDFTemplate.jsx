@@ -148,7 +148,31 @@ const ResumePDFTemplate = ({ resumeData }) => {
         {experience && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Experience</Text>
-            {renderMarkdownText(ensureString(experience))}
+            {Array.isArray(experience) ? experience.map((item, idx) => {
+              if (typeof item === 'string') return renderMarkdownText(item);
+              return (
+                <View key={idx} style={{ marginBottom: 12 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
+                    <Text style={{ ...styles.content, fontFamily: 'Helvetica-Bold' }}>
+                      {item.role || item.title} {item.company ? `at ${item.company}` : ''}
+                    </Text>
+                    <Text style={{ ...styles.content, color: '#666666' }}>
+                      {[item.location, item.duration].filter(Boolean).join(' | ')}
+                    </Text>
+                  </View>
+                  {item.responsibilities && Array.isArray(item.responsibilities) ? (
+                    item.responsibilities.map((resp, rIdx) => (
+                      <View key={rIdx} style={styles.bulletPoint}>
+                        <Text style={styles.bullet}>•</Text>
+                        <Text style={styles.bulletText}>{resp}</Text>
+                      </View>
+                    ))
+                  ) : item.responsibilities ? (
+                    renderMarkdownText(String(item.responsibilities))
+                  ) : null}
+                </View>
+              );
+            }) : renderMarkdownText(ensureString(experience))}
           </View>
         )}
 
@@ -156,7 +180,26 @@ const ResumePDFTemplate = ({ resumeData }) => {
         {education && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Education</Text>
-            {renderMarkdownText(ensureString(education))}
+            {Array.isArray(education) ? education.map((item, idx) => {
+              if (typeof item === 'string') return renderMarkdownText(item);
+              return (
+                <View key={idx} style={{ marginBottom: 8 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
+                    <Text style={{ ...styles.content, fontFamily: 'Helvetica-Bold' }}>
+                      {item.degree || item.title}
+                    </Text>
+                    <Text style={{ ...styles.content, color: '#666666' }}>
+                      {[item.location, item.duration].filter(Boolean).join(' | ')}
+                    </Text>
+                  </View>
+                  {item.institution && (
+                    <Text style={{ ...styles.content, color: '#333333' }}>
+                      {item.institution}
+                    </Text>
+                  )}
+                </View>
+              );
+            }) : renderMarkdownText(ensureString(education))}
           </View>
         )}
 

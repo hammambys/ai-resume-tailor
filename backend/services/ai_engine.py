@@ -16,14 +16,13 @@ def tailor_resume(resume_text: str, job_description: str) -> dict:
     - "name": Full name.
     - "contact": Contact information (email, phone, LinkedIn, etc.).
     - "summary": A professional summary.
-    - "experience": Work experience details in Markdown bullet points.
-    - "education": Education details.
+    - "experience": List of work experiences. Each object must have "company", "role", "location", "duration", and "responsibilities" (list of strings).
+    - "education": List of education details. Each object must have "institution", "degree", "location", and "duration".
     - "skills": List of relevant skills.
 
     Rules:
     - No hallucinations. Use only provided info.
     - Match JD keywords naturally.
-    - Use Markdown for formatting within the fields (e.g., bullet points for experience).
     - No intro/outro text. ONLY JSON.
 
     Resume: {resume_text}

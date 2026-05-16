@@ -8,12 +8,44 @@ export default function ResultViewer({ tailoredResume }) {
   const [copied, setCopied] = React.useState(false);
 
   const ensureString = (val) => {
-    if (Array.isArray(val)) return val.join('\n');
+    if (!val) return '';
+    if (typeof val === 'string') return val;
+    
+    if (Array.isArray(val)) {
+      // If it's a list of strings, just join them
+      if (val.length > 0 && typeof val[0] === 'string') {
+        return val.join('\n');
+      }
+      // If it's a list of objects (like experience or education)
+      return val.map(item => {
+        if (typeof item === 'string') return item;
+        if (typeof item === 'object') {
+          // Format based on likely keys
+          const parts = [];
+          if (item.role || item.title) parts.push(`### ${item.role || item.title}`);
+          if (item.company) parts.push(`**${item.company}**`);
+          if (item.institution) parts.push(`**${item.institution}**`);
+          if (item.degree) parts.push(`*${item.degree}*`);
+          
+          let meta = [item.location, item.duration].filter(Boolean).join(' | ');
+          if (meta) parts.push(meta);
+          
+          if (item.responsibilities && Array.isArray(item.responsibilities)) {
+            parts.push(item.responsibilities.map(r => `- ${r}`).join('\n'));
+          } else if (item.description) {
+            parts.push(item.description);
+          }
+          
+          return parts.join('\n\n');
+        }
+        return String(item);
+      }).join('\n\n---\n\n');
+    }
+
     if (typeof val === 'object' && val !== null) {
-      // If it's a flat object, join values with a separator
-      // This handles contact info like {email: ..., phone: ...}
-      // and education like {university: ..., degree: ...}
-      return Object.values(val).filter(Boolean).join(' | ');
+      return Object.entries(val)
+        .map(([key, value]) => `**${key}:** ${value}`)
+        .join(' | ');
     }
     return String(val || '');
   };
