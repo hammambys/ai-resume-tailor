@@ -31,7 +31,19 @@ export default function ResultViewer({ tailoredResume }) {
           if (meta) parts.push(meta);
 
           if (item.responsibilities && Array.isArray(item.responsibilities)) {
-            parts.push(item.responsibilities.map(r => `- ${r}`).join('\n'));
+            const bullets = item.responsibilities.map(r => `- ${r}`);
+            if (item.skills) {
+              const skillsStr = Array.isArray(item.skills) ? item.skills.join(', ') : item.skills;
+              bullets.push(`- **Skills Used:** ${skillsStr}`);
+            }
+            parts.push(bullets.join('\n'));
+          } else if (item.responsibilities) {
+            let respStr = String(item.responsibilities);
+            if (item.skills) {
+              const skillsStr = Array.isArray(item.skills) ? item.skills.join(', ') : item.skills;
+              respStr += `\n- **Skills Used:** ${skillsStr}`;
+            }
+            parts.push(respStr);
           } else if (item.description && Array.isArray(item.description)) {
             parts.push(item.description.map(d => `- ${d}`).join('\n'));
           } else if (item.description) {
@@ -84,8 +96,8 @@ export default function ResultViewer({ tailoredResume }) {
     const stringContent = ensureString(content);
 
     return (
-      <div className="mb-10 last:mb-0">
-        <h3 className="text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center">
+      <div className="mb-6 last:mb-0">
+        <h3 className="text-xl font-bold text-slate-900 mb-2 pb-1 border-b border-slate-100 flex items-center">
           <span className="w-1.5 h-6 bg-blue-600 rounded-full mr-3"></span>
           {title}
         </h3>
@@ -138,9 +150,9 @@ export default function ResultViewer({ tailoredResume }) {
         <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2.5rem] blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
         <div className="relative bg-white p-8 sm:p-16 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-50 min-h-[600px]">
           {isObject ? (
-            <div className="space-y-4">
-              <div className="text-center mb-12">
-                <h1 className="text-4xl font-black text-slate-900 mb-4">{ensureString(tailoredResume.name)}</h1>
+            <div className="space-y-0">
+              <div className="text-center mb-8">
+                <h1 className="text-4xl font-black text-slate-900 mb-2">{ensureString(tailoredResume.name)}</h1>
                 <div className="text-slate-600 font-medium">
                   <ReactMarkdown>{ensureString(tailoredResume.contact)}</ReactMarkdown>
                 </div>

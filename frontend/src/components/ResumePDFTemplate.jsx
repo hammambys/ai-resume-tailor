@@ -10,7 +10,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica',
   },
   header: {
-    marginBottom: 15,
+    marginBottom: 10,
   },
   name: {
     fontSize: 24,
@@ -24,16 +24,16 @@ const styles = StyleSheet.create({
     color: '#333333',
   },
   section: {
-    marginBottom: 15,
+    marginBottom: 10,
   },
   sectionTitle: {
     fontSize: 14,
     fontFamily: 'Helvetica-Bold',
-    marginBottom: 8,
+    marginBottom: 3,
     borderBottomWidth: 1,
     borderBottomColor: '#CCCCCC',
     borderBottomStyle: 'solid',
-    paddingBottom: 2,
+    paddingBottom: 1,
     textTransform: 'uppercase',
   },
   content: {
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
   },
   bulletPoint: {
     flexDirection: 'row',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   bullet: {
     width: 15,
@@ -147,7 +147,7 @@ const ResumePDFTemplate = ({ resumeData }) => {
             {Array.isArray(experience) ? experience.map((item, idx) => {
               if (typeof item === 'string') return renderMarkdownText(item);
               return (
-                <View key={idx} style={{ marginBottom: 12 }}>
+                <View key={idx} style={{ marginBottom: idx === experience.length - 1 ? 0 : 6 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
                     <Text style={{ ...styles.content, fontFamily: 'Helvetica-Bold' }}>
                       {item.role || item.title} {item.company ? `, ${item.company}` : ''}
@@ -157,14 +157,36 @@ const ResumePDFTemplate = ({ resumeData }) => {
                     </Text>
                   </View>
                   {item.responsibilities && Array.isArray(item.responsibilities) ? (
-                    item.responsibilities.map((resp, rIdx) => (
-                      <View key={rIdx} style={styles.bulletPoint}>
-                        <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>{resp}</Text>
-                      </View>
-                    ))
+                    <>
+                      {item.responsibilities.map((resp, rIdx) => (
+                        <View key={rIdx} style={styles.bulletPoint}>
+                          <Text style={styles.bullet}>•</Text>
+                          <Text style={styles.bulletText}>{resp}</Text>
+                        </View>
+                      ))}
+                      {item.skills && (
+                        <View style={styles.bulletPoint}>
+                          <Text style={styles.bullet}>•</Text>
+                          <Text style={styles.bulletText}>
+                            <Text style={{ fontFamily: 'Helvetica-Bold' }}>Skills: </Text>
+                            {Array.isArray(item.skills) ? item.skills.join(', ') : item.skills}
+                          </Text>
+                        </View>
+                      )}
+                    </>
                   ) : item.responsibilities ? (
-                    renderMarkdownText(String(item.responsibilities))
+                    <>
+                      {renderMarkdownText(String(item.responsibilities))}
+                      {item.skills && (
+                        <View style={styles.bulletPoint}>
+                          <Text style={styles.bullet}>•</Text>
+                          <Text style={styles.bulletText}>
+                            <Text style={{ fontFamily: 'Helvetica-Bold' }}>Skills: </Text>
+                            {Array.isArray(item.skills) ? item.skills.join(', ') : item.skills}
+                          </Text>
+                        </View>
+                      )}
+                    </>
                   ) : null}
                 </View>
               );
@@ -179,7 +201,7 @@ const ResumePDFTemplate = ({ resumeData }) => {
             {Array.isArray(education) ? education.map((item, idx) => {
               if (typeof item === 'string') return renderMarkdownText(item);
               return (
-                <View key={idx} style={{ marginBottom: 8 }}>
+                <View key={idx} style={{ marginBottom: idx === education.length - 1 ? 0 : 5 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
                     <Text style={{ ...styles.content, fontFamily: 'Helvetica-Bold' }}>
                       {item.degree || item.title}
@@ -205,7 +227,7 @@ const ResumePDFTemplate = ({ resumeData }) => {
             {Array.isArray(projects) ? projects.map((item, idx) => {
               if (typeof item === 'string') return renderMarkdownText(item);
               return (
-                <View key={idx} style={{ marginBottom: 8 }}>
+                <View key={idx} style={{ marginBottom: idx === projects.length - 1 ? 0 : 5 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
                     <Text style={{ ...styles.content, fontFamily: 'Helvetica-Bold' }}>
                       {item.name}
