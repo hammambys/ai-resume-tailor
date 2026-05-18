@@ -140,7 +140,7 @@ export default function ResultViewer({ tailoredResume }) {
           </button>
           <PDFDownloadLink
             document={<ResumePDFTemplate resumeData={tailoredResume} />}
-            fileName="Tailored_Resume.pdf"
+            fileName="Hammem_BenYounes_CV.pdf"
             className="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl transition-all duration-300 font-bold shadow-xl shadow-blue-500/25 active:scale-95"
           >
             {({ blob, url, loading, error }) => (

@@ -16,8 +16,8 @@ def tailor_resume(resume_text: str, job_description: str) -> dict:
     - "name": Full name.
     - "contact": Contact information (email, phone, LinkedIn, etc.).
     - "summary": Rewritten summary based on the job description with 2-3 sentences.
-    - "experience": List of all work experiences. Each object must have "company", "role", "location", "duration", "responsibilities" (list of strings with 15-25 words each with action verbs and quantify achievements where possible), and "skills" (list of strings of specific skills and technologies used in this job).
-    - "education": List of all education details. Each object must have "institution", "degree", "location", and "duration".
+    - "experience": List of all work experiences (don't skip any job). Each object must have "company", "role", "location", "duration", "responsibilities" (list of strings with 15-25 words each with action verbs and quantify achievements where possible), and "skills" (list of strings of specific skills and technologies used in this job).
+    - "education": List of all education details (unchanged). Each object must have "institution", "degree", "location", and "duration".
     - "skills": List of relevant 15 skills.
     - "projects": List of projects. Choose at most 3 most relevant projects. Each object must have "name", "description" (15-25 words), and "skills" (list of strings of specific tools, languages, and technologies used in this project).
 
