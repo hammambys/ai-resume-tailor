@@ -31,7 +31,8 @@ function App() {
     formData.append('job_description', jobDescription);
 
     try {
-      const response = await axios.post('http://127.0.0.1:5000/api/tailor', formData, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000/api';
+      const response = await axios.post(`${apiUrl}/tailor`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
