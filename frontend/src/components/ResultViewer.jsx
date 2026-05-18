@@ -34,20 +34,32 @@ export default function ResultViewer({ tailoredResume }) {
             const bullets = item.responsibilities.map(r => `- ${r}`);
             if (item.skills) {
               const skillsStr = Array.isArray(item.skills) ? item.skills.join(', ') : item.skills;
-              bullets.push(`- **Skills Used:** ${skillsStr}`);
+              bullets.push(`- **Skills:** ${skillsStr}`);
             }
             parts.push(bullets.join('\n'));
           } else if (item.responsibilities) {
             let respStr = String(item.responsibilities);
             if (item.skills) {
               const skillsStr = Array.isArray(item.skills) ? item.skills.join(', ') : item.skills;
-              respStr += `\n- **Skills Used:** ${skillsStr}`;
+              respStr += `\n- **Skills:** ${skillsStr}`;
             }
             parts.push(respStr);
           } else if (item.description && Array.isArray(item.description)) {
-            parts.push(item.description.map(d => `- ${d}`).join('\n'));
+            const bullets = item.description.map(d => `- ${d}`);
+            const techVal = item.technologies || item.skills;
+            if (techVal) {
+              const techStr = Array.isArray(techVal) ? techVal.join(', ') : techVal;
+              bullets.push(`- **Skills:** ${techStr}`);
+            }
+            parts.push(bullets.join('\n'));
           } else if (item.description) {
-            parts.push(item.description);
+            let descStr = String(item.description);
+            const techVal = item.technologies || item.skills;
+            if (techVal) {
+              const techStr = Array.isArray(techVal) ? techVal.join(', ') : techVal;
+              descStr += `\n- **Skills:** ${techStr}`;
+            }
+            parts.push(descStr);
           }
 
           return parts.join('\n\n');

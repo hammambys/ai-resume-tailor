@@ -15,14 +15,14 @@ def tailor_resume(resume_text: str, job_description: str) -> dict:
     Return the response as a JSON object with the following keys:
     - "name": Full name.
     - "contact": Contact information (email, phone, LinkedIn, etc.).
-    - "summary": Rewritten summary based on the job description.
-    - "experience": List of work experiences. Each object must have "company", "role", "location", "duration", "responsibilities" (list of strings), and "skills" (list of strings of specific skills and technologies used in this job).
-    - "education": List of education details. Each object must have "institution", "degree", "location", and "duration".
+    - "summary": Rewritten summary based on the job description with 2-3 sentences.
+    - "experience": List of all work experiences. Each object must have "company", "role", "location", "duration", "responsibilities" (list of strings with 15-25 words each with action verbs and quantify achievements where possible), and "skills" (list of strings of specific skills and technologies used in this job).
+    - "education": List of all education details. Each object must have "institution", "degree", "location", and "duration".
     - "skills": List of relevant 15 skills.
-    - "projects": List of projects. Choose at most 3 most relevant projects. Each object must have "name" and "description" (list of strings).
+    - "projects": List of projects. Choose at most 3 most relevant projects. Each object must have "name", "description" (15-25 words), and "skills" (list of strings of specific tools, languages, and technologies used in this project).
 
     Rules:
-    - No hallucinations. Use only provided info.
+    - No hallucinations. Use only provided info. Don't lie.
     - Match JD keywords naturally.
     - No intro/outro text. ONLY JSON.
 

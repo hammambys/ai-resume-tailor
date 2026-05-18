@@ -237,16 +237,38 @@ const ResumePDFTemplate = ({ resumeData }) => {
                     </Text>
                   </View>
                   {item.description && Array.isArray(item.description) ? (
-                    item.description.map((desc, dIdx) => (
-                      <View key={dIdx} style={styles.bulletPoint}>
-                        <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>{desc}</Text>
-                      </View>
-                    ))
+                    <>
+                      {item.description.map((desc, dIdx) => (
+                        <View key={dIdx} style={styles.bulletPoint}>
+                          <Text style={styles.bullet}>•</Text>
+                          <Text style={styles.bulletText}>{desc}</Text>
+                        </View>
+                      ))}
+                      {(item.technologies || item.skills) && (
+                        <View style={styles.bulletPoint}>
+                          <Text style={styles.bullet}>•</Text>
+                          <Text style={styles.bulletText}>
+                            <Text style={{ fontFamily: 'Helvetica-Bold' }}>Skills: </Text>
+                            {Array.isArray(item.technologies || item.skills) ? (item.technologies || item.skills).join(', ') : (item.technologies || item.skills)}
+                          </Text>
+                        </View>
+                      )}
+                    </>
                   ) : item.description ? (
-                    <Text style={{ ...styles.content, color: '#333333' }}>
-                      {item.description}
-                    </Text>
+                    <>
+                      <Text style={{ ...styles.content, color: '#333333', marginBottom: (item.technologies || item.skills) ? 4 : 0 }}>
+                        {item.description}
+                      </Text>
+                      {(item.technologies || item.skills) && (
+                        <View style={styles.bulletPoint}>
+                          <Text style={styles.bullet}>•</Text>
+                          <Text style={styles.bulletText}>
+                            <Text style={{ fontFamily: 'Helvetica-Bold' }}>Skills: </Text>
+                            {Array.isArray(item.technologies || item.skills) ? (item.technologies || item.skills).join(', ') : (item.technologies || item.skills)}
+                          </Text>
+                        </View>
+                      )}
+                    </>
                   ) : null}
                 </View>
               );
