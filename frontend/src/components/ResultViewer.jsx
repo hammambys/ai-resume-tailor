@@ -16,6 +16,14 @@ export default function ResultViewer({ tailoredResume }) {
       if (val.length > 0 && typeof val[0] === 'string') {
         return val.join('\n');
       }
+      // If it's a list of language/proficiency objects
+      if (val.length > 0 && typeof val[0] === 'object' && val[0] !== null && ('proficiency' in val[0] || 'level' in val[0] || !('company' in val[0] || 'institution' in val[0] || 'description' in val[0] || 'responsibilities' in val[0]))) {
+        return val.map(item => {
+          const name = item.name || item.language || '';
+          const prof = item.proficiency || item.level || '';
+          return prof ? `**${name}** (${prof})` : `**${name}**`;
+        }).join(', ');
+      }
       // If it's a list of objects (like experience or education)
       return val.map(item => {
         if (typeof item === 'string') return item;
@@ -80,15 +88,24 @@ export default function ResultViewer({ tailoredResume }) {
   const getFullMarkdown = () => {
     if (typeof tailoredResume === 'string') return tailoredResume;
 
-    const { name, contact, summary, experience, education, skills, projects } = tailoredResume;
+    const { name, email, phone, linkedin, github, website, summary, experience, education, skills, projects, languages } = tailoredResume;
+    const contactItems = [
+      email ? `Email: ${email}` : null,
+      phone ? `Phone: ${phone}` : null,
+      linkedin ? `LinkedIn: ${linkedin}` : null,
+      github ? `GitHub: ${github}` : null,
+      website ? `Website: ${website}` : null
+    ].filter(Boolean);
+    const contactStr = contactItems.join(' | ');
     return [
       `# ${ensureString(name)}`,
-      ensureString(contact),
+      contactStr,
       `## Summary\n${ensureString(summary)}`,
       `## Experience\n${ensureString(experience)}`,
       `## Education\n${ensureString(education)}`,
       `## Projects\n${ensureString(projects)}`,
-      `## Skills\n${ensureString(skills)}`
+      `## Skills\n${ensureString(skills)}`,
+      `## Languages\n${ensureString(languages)}`
     ].filter(Boolean).join('\n\n');
   };
 
@@ -166,7 +183,13 @@ export default function ResultViewer({ tailoredResume }) {
               <div className="text-center mb-8">
                 <h1 className="text-4xl font-black text-slate-900 mb-2">{ensureString(tailoredResume.name)}</h1>
                 <div className="text-slate-600 font-medium">
-                  <ReactMarkdown>{ensureString(tailoredResume.contact)}</ReactMarkdown>
+                  <ReactMarkdown>{[
+                    tailoredResume.email ? `Email: ${tailoredResume.email}` : null,
+                    tailoredResume.phone ? `Phone: ${tailoredResume.phone}` : null,
+                    tailoredResume.linkedin ? `LinkedIn: ${tailoredResume.linkedin}` : null,
+                    tailoredResume.github ? `GitHub: ${tailoredResume.github}` : null,
+                    tailoredResume.website ? `Website: ${tailoredResume.website}` : null
+                  ].filter(Boolean).join(' | ')}</ReactMarkdown>
                 </div>
               </div>
 
@@ -175,6 +198,7 @@ export default function ResultViewer({ tailoredResume }) {
               {renderSection("Education", tailoredResume.education)}
               {renderSection("Projects", tailoredResume.projects)}
               {renderSection("Skills", tailoredResume.skills)}
+              {renderSection("Languages", tailoredResume.languages)}
             </div>
           ) : (
             <div className="prose prose-slate prose-lg max-w-none text-slate-800 selection:bg-blue-100">

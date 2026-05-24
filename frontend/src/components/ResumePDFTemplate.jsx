@@ -96,7 +96,16 @@ const renderMarkdownText = (text) => {
 };
 
 const ensureString = (val) => {
-  if (Array.isArray(val)) return val.join(', ');
+  if (Array.isArray(val)) {
+    if (val.length > 0 && typeof val[0] === 'object' && val[0] !== null) {
+      return val.map(item => {
+        const name = item.name || item.language || '';
+        const prof = item.proficiency || item.level || '';
+        return prof ? `${name} (${prof})` : name;
+      }).filter(Boolean).join(', ');
+    }
+    return val.join(', ');
+  }
   if (typeof val === 'object' && val !== null) {
     return Object.values(val).filter(Boolean).join(' | ');
   }
@@ -120,7 +129,15 @@ const ResumePDFTemplate = ({ resumeData }) => {
     );
   }
 
-  const { name, contact, summary, experience, education, skills, projects } = resumeData;
+  const { name, email, phone, linkedin, github, website, summary, experience, education, skills, projects, languages } = resumeData;
+
+  const contactStr = [
+    email ? `Email: ${email}` : null,
+    phone ? `Phone: ${phone}` : null,
+    linkedin ? `LinkedIn: ${linkedin}` : null,
+    github ? `GitHub: ${github}` : null,
+    website ? `Website: ${website}` : null
+  ].filter(Boolean).join(' | ');
 
   return (
     <Document>
@@ -129,7 +146,7 @@ const ResumePDFTemplate = ({ resumeData }) => {
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.name}>{ensureString(name)}</Text>
-          <Text style={styles.contact}>{ensureString(contact).replace(/\n/g, ' | ')}</Text>
+          <Text style={styles.contact}>{contactStr}</Text>
         </View>
 
         {/* Summary */}
@@ -147,8 +164,8 @@ const ResumePDFTemplate = ({ resumeData }) => {
             {Array.isArray(experience) ? experience.map((item, idx) => {
               if (typeof item === 'string') return renderMarkdownText(item);
               return (
-                <View key={idx} style={{ marginBottom: idx === experience.length - 1 ? 0 : 6 }}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
+                <React.Fragment key={idx}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2, marginTop: idx === 0 ? 0 : 6 }}>
                     <Text style={{ ...styles.content, fontFamily: 'Helvetica-Bold' }}>
                       {item.role || item.title} {item.company ? `, ${item.company}` : ''}
                     </Text>
@@ -188,7 +205,7 @@ const ResumePDFTemplate = ({ resumeData }) => {
                       )}
                     </>
                   ) : null}
-                </View>
+                </React.Fragment>
               );
             }) : renderMarkdownText(ensureString(experience))}
           </View>
@@ -201,8 +218,8 @@ const ResumePDFTemplate = ({ resumeData }) => {
             {Array.isArray(education) ? education.map((item, idx) => {
               if (typeof item === 'string') return renderMarkdownText(item);
               return (
-                <View key={idx} style={{ marginBottom: idx === education.length - 1 ? 0 : 5 }}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
+                <React.Fragment key={idx}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2, marginTop: idx === 0 ? 0 : 5 }}>
                     <Text style={{ ...styles.content, fontFamily: 'Helvetica-Bold' }}>
                       {item.degree || item.title}
                     </Text>
@@ -215,7 +232,7 @@ const ResumePDFTemplate = ({ resumeData }) => {
                       {item.institution}
                     </Text>
                   )}
-                </View>
+                </React.Fragment>
               );
             }) : renderMarkdownText(ensureString(education))}
           </View>
@@ -227,8 +244,8 @@ const ResumePDFTemplate = ({ resumeData }) => {
             {Array.isArray(projects) ? projects.map((item, idx) => {
               if (typeof item === 'string') return renderMarkdownText(item);
               return (
-                <View key={idx} style={{ marginBottom: idx === projects.length - 1 ? 0 : 5 }}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
+                <React.Fragment key={idx}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2, marginTop: idx === 0 ? 0 : 5 }}>
                     <Text style={{ ...styles.content, fontFamily: 'Helvetica-Bold' }}>
                       {item.name}
                     </Text>
@@ -270,7 +287,7 @@ const ResumePDFTemplate = ({ resumeData }) => {
                       )}
                     </>
                   ) : null}
-                </View>
+                </React.Fragment>
               );
             }) : renderMarkdownText(ensureString(projects))}
           </View>
@@ -280,6 +297,14 @@ const ResumePDFTemplate = ({ resumeData }) => {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Skills</Text>
             <Text style={styles.content}>{ensureString(skills)}</Text>
+          </View>
+        )}
+
+        {/* Languages */}
+        {languages && (Array.isArray(languages) ? languages.length > 0 : Boolean(languages)) && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Languages</Text>
+            <Text style={styles.content}>{ensureString(languages)}</Text>
           </View>
         )}
       </Page>
