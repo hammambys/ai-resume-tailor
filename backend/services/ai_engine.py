@@ -22,6 +22,8 @@ def tailor_resume(resume_text: str, job_description: str) -> dict:
     - "summary": Rewritten summary based on the job description with 3-4 sentences.
     - "experience": List of all work experiences (don't skip any job). Each object must have "company", "role", "location", "duration", "responsibilities" (list of strings of rewritten responsibilities tailored for this job each with action verbs and quantify achievements where possible), and "skills" (list of strings of technologies used in this job).
     - "education": List of all education details (unchanged). Each object must have "institution", "degree", "location", and "duration".
+    - "certifications": List of relevant certifications (if available, otherwise empty list). Include only certifications that align with the job description. Each string should be the certification name.
+    - "trainings": List of relevant trainings (if available, otherwise empty list). Include only trainings that align with the job description. Each string should be the training name.
     - "skills": List of relevant 15 skills.
     - "projects": List of projects. Choose at most 3 most relevant projects. Each object must have "name", "description", and "skills" (list of strings of specific tools, languages, and technologies used in this project).
     - "languages": List of languages spoken/written (if available, otherwise empty list). Each object must have "name" and "proficiency".
@@ -67,6 +69,8 @@ def tailor_resume(resume_text: str, job_description: str) -> dict:
             "summary": "There was an error parsing the AI response.",
             "experience": content,
             "education": "",
+            "certifications": [],
+            "trainings": [],
             "skills": "",
             "projects": "",
             "languages": []

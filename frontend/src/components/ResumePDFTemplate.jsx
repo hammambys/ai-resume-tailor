@@ -129,7 +129,7 @@ const ResumePDFTemplate = ({ resumeData }) => {
     );
   }
 
-  const { name, email, phone, linkedin, github, website, summary, experience, education, skills, projects, languages } = resumeData;
+  const { name, email, phone, linkedin, github, website, summary, experience, education, certifications, trainings, skills, projects, languages } = resumeData;
 
   const contactStr = [
     email ? `Email: ${email}` : null,
@@ -237,6 +237,26 @@ const ResumePDFTemplate = ({ resumeData }) => {
             }) : renderMarkdownText(ensureString(education))}
           </View>
         )}
+
+        {/* Certifications & Trainings */}
+        {(certifications && (Array.isArray(certifications) ? certifications.length > 0 : Boolean(certifications))) || 
+         (trainings && (Array.isArray(trainings) ? trainings.length > 0 : Boolean(trainings))) ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Certifications & Trainings</Text>
+            {certifications && Array.isArray(certifications) && certifications.map((item, idx) => (
+              <View key={`cert-${idx}`} style={styles.bulletPoint}>
+                <Text style={styles.bullet}>•</Text>
+                <Text style={styles.bulletText}>{item}</Text>
+              </View>
+            ))}
+            {trainings && Array.isArray(trainings) && trainings.map((item, idx) => (
+              <View key={`train-${idx}`} style={styles.bulletPoint}>
+                <Text style={styles.bullet}>•</Text>
+                <Text style={styles.bulletText}>{item}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
         {/* Projects */}
         {projects && (
           <View style={styles.section}>
