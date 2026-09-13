@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: 'Helvetica-Bold',
     marginBottom: 3,
     borderBottomWidth: 1,
@@ -56,6 +56,19 @@ const styles = StyleSheet.create({
 });
 
 // Helper to parse simple markdown lists
+const renderInlineMarkdown = (text) => {
+  const parts = String(text).split(/(\*\*.*?\*\*|__.*?__|\*.*?\*)/g);
+
+  return parts.map((part, index) => {
+    const isBold = /^\*\*.*\*\*$/.test(part) || /^__.*__$/.test(part);
+    const content = isBold || /^\*.*\*$/.test(part) ? part.slice(isBold ? 2 : 1, isBold ? -2 : -1) : part;
+
+    return isBold ? (
+      <Text key={index} style={{ fontFamily: 'Helvetica-Bold' }}>{content}</Text>
+    ) : content;
+  });
+};
+
 const renderMarkdownText = (text) => {
   if (!text) return null;
 
@@ -69,7 +82,7 @@ const renderMarkdownText = (text) => {
       return (
         <View key={index} style={styles.bulletPoint}>
           <Text style={styles.bullet}>•</Text>
-          <Text style={styles.bulletText}>{trimmed.substring(2)}</Text>
+          <Text style={styles.bulletText}>{renderInlineMarkdown(trimmed.substring(2))}</Text>
         </View>
       );
     }
@@ -91,7 +104,7 @@ const renderMarkdownText = (text) => {
     }
     if (trimmed.startsWith('# ')) return null; // handled in titles
 
-    return <Text key={index} style={styles.content}>{content}</Text>;
+    return <Text key={index} style={styles.content}>{renderInlineMarkdown(content)}</Text>;
   });
 };
 
@@ -249,12 +262,14 @@ const ResumePDFTemplate = ({ resumeData }) => {
                 <Text style={styles.bulletText}>{item}</Text>
               </View>
             ))}
+            {certifications && !Array.isArray(certifications) && renderMarkdownText(String(certifications))}
             {trainings && Array.isArray(trainings) && trainings.map((item, idx) => (
               <View key={`train-${idx}`} style={styles.bulletPoint}>
                 <Text style={styles.bullet}>•</Text>
                 <Text style={styles.bulletText}>{item}</Text>
               </View>
             ))}
+            {trainings && !Array.isArray(trainings) && renderMarkdownText(String(trainings))}
           </View>
         ) : null}
         {/* Projects */}

@@ -1,11 +1,13 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FiDownload, FiCopy, FiCheck } from 'react-icons/fi';
 import ReactMarkdown from 'react-markdown';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import ResumePDFTemplate from './ResumePDFTemplate';
 
 export default function ResultViewer({ tailoredResume }) {
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [draftResume, setDraftResume] = useState(tailoredResume);
 
   const ensureString = (val) => {
     if (!val) return '';
@@ -30,8 +32,12 @@ export default function ResultViewer({ tailoredResume }) {
         if (typeof item === 'object') {
           // Format based on likely keys
           const parts = [];
-          if (item.name || item.title) parts.push(`### ${item.name || item.title}`);
-          if (item.company) parts.push(`**${item.company}**`);
+          if (item.role) {
+            parts.push(`### ${item.role}${item.company ? `, ${item.company}` : ''}`);
+          } else if (item.name || item.title) {
+            parts.push(`### ${item.name || item.title}`);
+          }
+          if (item.company && !item.role) parts.push(`**${item.company}**`);
           if (item.institution) parts.push(`**${item.institution}**`);
           if (item.degree) parts.push(`*${item.degree}*`);
 
@@ -73,7 +79,7 @@ export default function ResultViewer({ tailoredResume }) {
           return parts.join('\n\n');
         }
         return String(item);
-      }).join('\n\n---\n\n');
+      }).join('\n\n');
     }
 
     if (typeof val === 'object' && val !== null) {
@@ -84,11 +90,16 @@ export default function ResultViewer({ tailoredResume }) {
     return String(val || '');
   };
 
+  useEffect(() => {
+    setDraftResume(tailoredResume);
+    setIsEditing(false);
+  }, [tailoredResume]);
+
   // Helper to join sections into a single markdown string
   const getFullMarkdown = () => {
-    if (typeof tailoredResume === 'string') return tailoredResume;
+    if (typeof draftResume === 'string') return draftResume;
 
-    const { name, email, phone, linkedin, github, website, summary, experience, education, skills, projects, languages } = tailoredResume;
+    const { name, email, phone, linkedin, github, website, summary, experience, education, certifications, trainings, skills, projects, languages } = draftResume;
     const contactItems = [
       email ? `Email: ${email}` : null,
       phone ? `Phone: ${phone}` : null,
@@ -103,6 +114,8 @@ export default function ResultViewer({ tailoredResume }) {
       `## Summary\n${ensureString(summary)}`,
       `## Experience\n${ensureString(experience)}`,
       `## Education\n${ensureString(education)}`,
+      `## Certifications\n${ensureString(certifications)}`,
+      `## Trainings\n${ensureString(trainings)}`,
       `## Projects\n${ensureString(projects)}`,
       `## Skills\n${ensureString(skills)}`,
       `## Languages\n${ensureString(languages)}`
@@ -116,7 +129,13 @@ export default function ResultViewer({ tailoredResume }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (!tailoredResume) return null;
+  const updateDraftField = (field, value) => {
+    setDraftResume(current => ({ ...current, [field]: value }));
+  };
+
+  const getEditorValue = (value) => ensureString(value);
+
+  if (!draftResume) return null;
 
   const renderSection = (title, content) => {
     if (!content) return null;
@@ -137,7 +156,7 @@ export default function ResultViewer({ tailoredResume }) {
     );
   };
 
-  const isObject = typeof tailoredResume === 'object' && tailoredResume !== null;
+  const isObject = typeof draftResume === 'object' && draftResume !== null;
 
 
   return (
@@ -155,8 +174,18 @@ export default function ResultViewer({ tailoredResume }) {
             {copied ? <FiCheck className="mr-2 text-emerald-500" /> : <FiCopy className="mr-2" />}
             {copied ? 'Copied!' : 'Copy Text'}
           </button>
+          <button
+            onClick={() => setIsEditing(current => !current)}
+            className={`flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 rounded-2xl transition-all duration-300 font-bold active:scale-95 ${
+              isEditing
+                ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                : 'bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-slate-900/15'
+            }`}
+          >
+            {isEditing ? 'Done Editing' : 'Edit Resume'}
+          </button>
           <PDFDownloadLink
-            document={<ResumePDFTemplate resumeData={tailoredResume} />}
+            document={<ResumePDFTemplate resumeData={draftResume} />}
             fileName="Hammem_BenYounes_CV.pdf"
             className="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl transition-all duration-300 font-bold shadow-xl shadow-blue-500/25 active:scale-95"
           >
@@ -180,29 +209,87 @@ export default function ResultViewer({ tailoredResume }) {
         <div className="relative bg-white p-8 sm:p-16 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-50 min-h-[600px]">
           {isObject ? (
             <div className="space-y-0">
-              <div className="text-center mb-8">
-                <h1 className="text-4xl font-black text-slate-900 mb-2">{ensureString(tailoredResume.name)}</h1>
-                <div className="text-slate-600 font-medium">
-                  <ReactMarkdown>{[
-                    tailoredResume.email ? `Email: ${tailoredResume.email}` : null,
-                    tailoredResume.phone ? `Phone: ${tailoredResume.phone}` : null,
-                    tailoredResume.linkedin ? `LinkedIn: ${tailoredResume.linkedin}` : null,
-                    tailoredResume.github ? `GitHub: ${tailoredResume.github}` : null,
-                    tailoredResume.website ? `Website: ${tailoredResume.website}` : null
-                  ].filter(Boolean).join(' | ')}</ReactMarkdown>
+              {isEditing ? (
+                <div className="space-y-6">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {[
+                      ['name', 'Full name'],
+                      ['email', 'Email'],
+                      ['phone', 'Phone'],
+                      ['linkedin', 'LinkedIn'],
+                      ['github', 'GitHub'],
+                      ['website', 'Website']
+                    ].map(([field, label]) => (
+                      <label key={field} className="block">
+                        <span className="mb-2 block text-sm font-bold text-slate-600">{label}</span>
+                        <input
+                          type="text"
+                          value={getEditorValue(draftResume[field])}
+                          onChange={(event) => updateDraftField(field, event.target.value)}
+                          className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                  {[
+                    ['summary', 'Summary'],
+                    ['experience', 'Experience'],
+                    ['education', 'Education'],
+                    ['certifications', 'Certifications'],
+                    ['trainings', 'Trainings'],
+                    ['projects', 'Projects'],
+                    ['skills', 'Skills'],
+                    ['languages', 'Languages']
+                  ].map(([field, label]) => (
+                    <label key={field} className="block">
+                      <span className="mb-2 block text-sm font-bold text-slate-600">{label}</span>
+                      <textarea
+                        value={getEditorValue(draftResume[field])}
+                        onChange={(event) => updateDraftField(field, event.target.value)}
+                        rows={field === 'summary' ? 4 : 7}
+                        className="w-full resize-y rounded-xl border border-slate-200 px-4 py-3 text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      />
+                    </label>
+                  ))}
                 </div>
-              </div>
+              ) : (
+                <>
+                  <div className="text-center mb-8">
+                    <h1 className="text-4xl font-black text-slate-900 mb-2">{ensureString(draftResume.name)}</h1>
+                    <div className="text-slate-600 font-medium">
+                      <ReactMarkdown>{[
+                        draftResume.email ? `Email: ${draftResume.email}` : null,
+                        draftResume.phone ? `Phone: ${draftResume.phone}` : null,
+                        draftResume.linkedin ? `LinkedIn: ${draftResume.linkedin}` : null,
+                        draftResume.github ? `GitHub: ${draftResume.github}` : null,
+                        draftResume.website ? `Website: ${draftResume.website}` : null
+                      ].filter(Boolean).join(' | ')}</ReactMarkdown>
+                    </div>
+                  </div>
 
-              {renderSection("Summary", tailoredResume.summary)}
-              {renderSection("Experience", tailoredResume.experience)}
-              {renderSection("Education", tailoredResume.education)}
-              {renderSection("Projects", tailoredResume.projects)}
-              {renderSection("Skills", tailoredResume.skills)}
-              {renderSection("Languages", tailoredResume.languages)}
+                  {renderSection("Summary", draftResume.summary)}
+                  {renderSection("Experience", draftResume.experience)}
+                  {renderSection("Education", draftResume.education)}
+                  {renderSection("Certifications", draftResume.certifications)}
+                  {renderSection("Trainings", draftResume.trainings)}
+                  {renderSection("Projects", draftResume.projects)}
+                  {renderSection("Skills", draftResume.skills)}
+                  {renderSection("Languages", draftResume.languages)}
+                </>
+              )}
             </div>
           ) : (
             <div className="prose prose-slate prose-lg max-w-none text-slate-800 selection:bg-blue-100">
-              <ReactMarkdown>{ensureString(tailoredResume)}</ReactMarkdown>
+              {isEditing ? (
+                <textarea
+                  value={draftResume}
+                  onChange={(event) => setDraftResume(event.target.value)}
+                  rows={24}
+                  className="w-full resize-y rounded-xl border border-slate-200 px-4 py-3 font-sans text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                />
+              ) : (
+                <ReactMarkdown>{ensureString(draftResume)}</ReactMarkdown>
+              )}
             </div>
           )}
         </div>

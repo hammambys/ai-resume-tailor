@@ -20,7 +20,7 @@ def tailor_resume(resume_text: str, job_description: str) -> dict:
     - "github": GitHub profile link or handle (if available, otherwise empty string).
     - "website": Personal portfolio or website URL (if available, otherwise empty string).
     - "summary": Rewritten summary based on the job description with 3-4 sentences.
-    - "experience": List of all work experiences (don't skip any job). Each object must have "company", "role", "location", "duration", "responsibilities" (list of strings of rewritten responsibilities tailored for this job each with action verbs and quantify achievements where possible), and "skills" (list of strings of technologies used in this job).
+    - "experience": List of all work experiences (don't skip any job). Each object must have "company", "role", "location", "duration", "responsibilities" (list of strings of rewritten responsibilities tailored for this job, with action verbs and quantified achievements where possible). For every role, use the most relevant supported keywords and responsibility phrases from the job description directly inside these responsibility bullets, without changing the original facts, and include "skills" (list of strings of technologies used in this job).
     - "education": List of all education details (unchanged). Each object must have "institution", "degree", "location", and "duration".
     - "certifications": List of relevant certifications (if available, otherwise empty list). Include only certifications that align with the job description. Each string should include certification name and issuing organization if available, formatted like "Certification Name, Issuing Organization".
     - "trainings": List of relevant trainings (if available, otherwise empty list). Include only trainings that align with the job description. Each string should include training name and issuing organization if available, formatted like "Training Name, Issuing Organization".
@@ -29,12 +29,12 @@ def tailor_resume(resume_text: str, job_description: str) -> dict:
     - "languages": List of languages spoken/written (if available, otherwise empty list). Each object must have "name" and "proficiency".
     
     Rules:
-    - No hallucinations. Use only provided info. Don't lie.
-    - Match JD keywords naturally.
-    - No intro/outro text. ONLY JSON.
+    - No hallucinations.
+    - Don't invent any information.
+    - No lying or misleading information.
 
     Resume: {resume_text}
-    JD: {job_description}
+    Job Description: {job_description}
     """
 
     chat_completion = client.chat.completions.create(
