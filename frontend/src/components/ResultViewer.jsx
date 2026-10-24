@@ -3,11 +3,18 @@ import { FiDownload, FiCopy, FiCheck } from 'react-icons/fi';
 import ReactMarkdown from 'react-markdown';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import ResumePDFTemplate from './ResumePDFTemplate';
+import ResumeWordedPDFTemplate from './ResumeWordedPDFTemplate';
+
+const resumeTemplates = [
+  { id: 'current', name: 'Template 1', description: 'Clean, classic single-column layout.' },
+  { id: 'resume-worded', name: 'Template 2', description: 'Compact layout inspired by the supplied Word template.' }
+];
 
 export default function ResultViewer({ tailoredResume }) {
   const [copied, setCopied] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [draftResume, setDraftResume] = useState(tailoredResume);
+  const [selectedTemplate, setSelectedTemplate] = useState('current');
 
   const ensureString = (val) => {
     if (!val) return '';
@@ -161,22 +168,44 @@ export default function ResultViewer({ tailoredResume }) {
 
   return (
     <div className="mt-20 pt-16 border-t border-slate-200 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-6">
-        <div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Tailored Resume</h2>
-          <p className="text-slate-500 font-medium">Your optimized resume is ready for review.</p>
+      <div className="mb-6">
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Tailored Resume</h2>
+        <p className="text-slate-500 font-medium">Your optimized resume is ready for review.</p>
+      </div>
+
+      <fieldset className="mb-6">
+        <legend className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500">Choose a PDF template</legend>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {resumeTemplates.map((template) => (
+            <button
+              key={template.id}
+              type="button"
+              aria-pressed={selectedTemplate === template.id}
+              onClick={() => setSelectedTemplate(template.id)}
+              className={`rounded-2xl border-2 p-4 text-left transition ${
+                selectedTemplate === template.id
+                  ? 'border-blue-600 bg-blue-50 shadow-sm'
+                  : 'border-slate-200 bg-white hover:border-blue-300'
+              }`}
+            >
+              <span className="block font-bold text-slate-900">{template.name}</span>
+              <span className="mt-1 block text-sm text-slate-500">{template.description}</span>
+            </button>
+          ))}
         </div>
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+      </fieldset>
+
+      <div className="mb-10 flex flex-col sm:flex-row sm:justify-end items-center gap-3">
           <button
             onClick={handleCopy}
-            className="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 bg-white border-2 border-slate-100 hover:border-blue-500 hover:text-blue-600 text-slate-600 rounded-2xl transition-all duration-300 font-bold shadow-sm active:scale-95"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-white border-2 border-slate-100 hover:border-blue-500 hover:text-blue-600 text-slate-600 rounded-2xl transition-all duration-300 font-bold shadow-sm active:scale-95"
           >
             {copied ? <FiCheck className="mr-2 text-emerald-500" /> : <FiCopy className="mr-2" />}
             {copied ? 'Copied!' : 'Copy Text'}
           </button>
           <button
             onClick={() => setIsEditing(current => !current)}
-            className={`flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 rounded-2xl transition-all duration-300 font-bold active:scale-95 ${
+            className={`w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 rounded-2xl transition-all duration-300 font-bold active:scale-95 ${
               isEditing
                 ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 : 'bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-slate-900/15'
@@ -185,11 +214,13 @@ export default function ResultViewer({ tailoredResume }) {
             {isEditing ? 'Done Editing' : 'Edit Resume'}
           </button>
           <PDFDownloadLink
-            document={<ResumePDFTemplate resumeData={draftResume} />}
+            document={selectedTemplate === 'current'
+              ? <ResumePDFTemplate resumeData={draftResume} />
+              : <ResumeWordedPDFTemplate resumeData={draftResume} />}
             fileName="Hammem_BenYounes_CV.pdf"
-            className="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl transition-all duration-300 font-bold shadow-xl shadow-blue-500/25 active:scale-95"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl transition-all duration-300 font-bold shadow-xl shadow-blue-500/25 active:scale-95"
           >
-            {({ blob, url, loading, error }) => (
+            {({ loading }) => (
               <>
                 {loading ? (
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -201,7 +232,6 @@ export default function ResultViewer({ tailoredResume }) {
               </>
             )}
           </PDFDownloadLink>
-        </div>
       </div>
 
       <div className="relative group">
