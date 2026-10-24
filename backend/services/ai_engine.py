@@ -22,11 +22,11 @@ def tailor_resume(resume_text: str, job_description: str) -> dict:
     - "summary": Rewritten summary based on the job description with 3-4 sentences.
     - "experience": List of all work experiences (don't skip any job). Each object must have "company", "role", "location", "duration", "responsibilities" (list of strings of rewritten responsibilities tailored for this job, with action verbs and quantified achievements where possible). For every role, use the most relevant supported keywords and responsibility phrases from the job description directly inside these responsibility bullets, without changing the original facts, and include "skills" (list of strings of technologies used in this job).
     - "education": List of all education details (unchanged). Each object must have "institution", "degree", "location", and "duration".
-    - "certifications": List of relevant certifications (if available, otherwise empty list). Include only certifications that align with the job description. Each string should include certification name and issuing organization if available, formatted like "Certification Name, Issuing Organization".
-    - "trainings": List of relevant trainings (if available, otherwise empty list). Include only trainings that align with the job description. Each string should include training name and issuing organization if available, formatted like "Training Name, Issuing Organization".
-    - "skills": List of relevant 15 skills.
-    - "projects": List of projects. Choose at most 3 most relevant projects. Each object must have "name", "description", and "skills" (list of strings of specific tools, languages, and technologies used in this project).
-    - "languages": List of languages spoken/written (if available, otherwise empty list). Each object must have "name" and "proficiency".
+    - "certifications": List of certifications (if available, otherwise empty list). Include only certifications that align with the job description. Each string should include certification name and issuing organization if available, formatted like "Certification Name, Issuing Organization".
+    - "trainings": List of trainings (if available, otherwise empty list). Include only trainings that align with the job description. Each string should include training name and issuing organization if available, formatted like "Training Name, Issuing Organization".
+    - "skills": List of skills. Choose the 10 most relevant skills to this job.
+    - "projects": List of projects. Choose the 3 most relevant projects to this job. Each object must have "name", "description", and "skills" (list of strings of specific tools, languages, and technologies used in this project).
+    - "languages": List of languages (if available, otherwise empty list). Each object must have "name" and "proficiency".
     
     Rules:
     - No hallucinations.
