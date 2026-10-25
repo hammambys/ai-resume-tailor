@@ -5,16 +5,32 @@ import JobDescriptionInput from './components/JobDescriptionInput';
 import ResultViewer from './components/ResultViewer';
 import { FiCpu, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 
+const GOOGLE_DOCS_URL_STORAGE_KEY = 'resume-tailor.googleDocsUrl';
+
 function App() {
+  const [initialGoogleDocsState] = useState(() => {
+    try {
+      return {
+        url: window.localStorage.getItem(GOOGLE_DOCS_URL_STORAGE_KEY) || '',
+        error: null
+      };
+    } catch {
+      return {
+        url: '',
+        error: 'Unable to restore the saved Google Docs link from this browser.'
+      };
+    }
+  });
   const [file, setFile] = useState(null);
+  const [googleDocsUrl, setGoogleDocsUrl] = useState(initialGoogleDocsState.url);
   const [jobDescription, setJobDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(initialGoogleDocsState.error);
 
   const handleTailor = async () => {
-    if (!file) {
-      setError("Please upload a resume file.");
+    if (!file && !googleDocsUrl.trim()) {
+      setError("Upload a resume file or enter a Google Docs link.");
       return;
     }
     if (!jobDescription.trim()) {
@@ -27,7 +43,11 @@ function App() {
     setResult(null);
 
     const formData = new FormData();
-    formData.append('resume_file', file);
+    if (file) {
+      formData.append('resume_file', file);
+    } else {
+      formData.append('google_doc_url', googleDocsUrl.trim());
+    }
     formData.append('job_description', jobDescription);
 
     try {
@@ -77,7 +97,57 @@ function App() {
           )}
 
           <div className="space-y-10">
-            <UploadSection file={file} onFileUpload={setFile} />
+            <UploadSection
+              file={file}
+              onFileUpload={(selectedFile) => {
+                setFile(selectedFile);
+                if (selectedFile) {
+                  setGoogleDocsUrl('');
+                } else {
+                  try {
+                    setGoogleDocsUrl(window.localStorage.getItem(GOOGLE_DOCS_URL_STORAGE_KEY) || '');
+                  } catch {
+                    setError('Unable to restore the saved Google Docs link from this browser.');
+                  }
+                }
+              }}
+            />
+
+            <div className="flex items-center gap-4 text-sm font-bold uppercase tracking-wider text-slate-400">
+              <span className="h-px flex-1 bg-slate-200" />
+              <span>Or use a Google Doc</span>
+              <span className="h-px flex-1 bg-slate-200" />
+            </div>
+
+            <label htmlFor="google-doc-url" className="block">
+              <span className="mb-2 block text-lg font-bold text-slate-800">Google Docs link</span>
+              <input
+                id="google-doc-url"
+                type="url"
+                value={googleDocsUrl}
+                onChange={(event) => {
+                  const url = event.target.value;
+                  setGoogleDocsUrl(url);
+                  if (url.trim()) setFile(null);
+                  try {
+                    if (url.trim()) {
+                      window.localStorage.setItem(GOOGLE_DOCS_URL_STORAGE_KEY, url);
+                    } else {
+                      window.localStorage.removeItem(GOOGLE_DOCS_URL_STORAGE_KEY);
+                    }
+                    setError(null);
+                  } catch {
+                    setError('Unable to save the Google Docs link in this browser.');
+                  }
+                }}
+                placeholder="https://docs.google.com/document/d/..."
+                autoComplete="url"
+                className="w-full rounded-2xl border border-slate-200 bg-white px-5 py-4 text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+              <span className="mt-2 block text-sm text-slate-500">
+                Your link is saved in this browser for next time. The document must be shared as “Anyone with the link.” Only one resume source can be used at a time.
+              </span>
+            </label>
             
             <JobDescriptionInput value={jobDescription} onChange={setJobDescription} />
 

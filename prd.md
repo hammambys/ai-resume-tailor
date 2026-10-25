@@ -17,6 +17,8 @@ The primary focus is **code simplicity, modular backend design, and efficient AI
 - Accept file types:
   - PDF (.pdf)
   - TXT (.txt)
+- Allow users to provide a Google Docs link instead of uploading a file.
+- Google Docs must be shared as “Anyone with the link”; private documents are not supported.
 - Maximum file size: 5MB
 - Extract raw text from uploaded file
 - Normalize extracted text into clean format
@@ -80,7 +82,7 @@ The primary focus is **code simplicity, modular backend design, and efficient AI
 
 # 3. 🧩 User Flow
 
-1. Upload resume (PDF/TXT)
+1. Upload resume (PDF/TXT) or enter a publicly accessible Google Docs link
 2. System extracts and cleans text
 3. Paste job description
 4. Click "Tailor Resume"

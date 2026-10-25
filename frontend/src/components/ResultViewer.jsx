@@ -10,11 +10,28 @@ const resumeTemplates = [
   { id: 'resume-worded', name: 'Template 2', description: 'Compact layout inspired by the supplied Word template.' }
 ];
 
+const TEMPLATE_STORAGE_KEY = 'resume-tailor.selectedTemplate';
+
 export default function ResultViewer({ tailoredResume }) {
   const [copied, setCopied] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [draftResume, setDraftResume] = useState(tailoredResume);
-  const [selectedTemplate, setSelectedTemplate] = useState('current');
+  const [initialTemplateState] = useState(() => {
+    try {
+      const savedTemplate = window.localStorage.getItem(TEMPLATE_STORAGE_KEY);
+      return {
+        template: resumeTemplates.some(({ id }) => id === savedTemplate) ? savedTemplate : 'current',
+        error: null
+      };
+    } catch {
+      return {
+        template: 'current',
+        error: 'Unable to restore the saved PDF template from this browser.'
+      };
+    }
+  });
+  const [selectedTemplate, setSelectedTemplate] = useState(initialTemplateState.template);
+  const [templateStorageError, setTemplateStorageError] = useState(initialTemplateState.error);
 
   const ensureString = (val) => {
     if (!val) return '';
@@ -140,6 +157,16 @@ export default function ResultViewer({ tailoredResume }) {
     setDraftResume(current => ({ ...current, [field]: value }));
   };
 
+  const handleTemplateChange = (template) => {
+    setSelectedTemplate(template);
+    try {
+      window.localStorage.setItem(TEMPLATE_STORAGE_KEY, template);
+      setTemplateStorageError(null);
+    } catch {
+      setTemplateStorageError('Unable to save the PDF template in this browser.');
+    }
+  };
+
   const getEditorValue = (value) => ensureString(value);
 
   if (!draftResume) return null;
@@ -181,7 +208,7 @@ export default function ResultViewer({ tailoredResume }) {
               key={template.id}
               type="button"
               aria-pressed={selectedTemplate === template.id}
-              onClick={() => setSelectedTemplate(template.id)}
+              onClick={() => handleTemplateChange(template.id)}
               className={`rounded-2xl border-2 p-4 text-left transition ${
                 selectedTemplate === template.id
                   ? 'border-blue-600 bg-blue-50 shadow-sm'
@@ -193,6 +220,9 @@ export default function ResultViewer({ tailoredResume }) {
             </button>
           ))}
         </div>
+        {templateStorageError && (
+          <p role="status" className="mt-2 text-sm text-amber-700">{templateStorageError}</p>
+        )}
       </fieldset>
 
       <div className="mb-10 flex flex-col sm:flex-row sm:justify-end items-center gap-3">
