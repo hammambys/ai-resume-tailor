@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import UploadSection from './components/UploadSection';
 import JobDescriptionInput from './components/JobDescriptionInput';
 import ResultViewer from './components/ResultViewer';
-import { FiCpu, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
+import { FiCpu, FiAlertCircle } from 'react-icons/fi';
 
 const GOOGLE_DOCS_URL_STORAGE_KEY = 'resume-tailor.googleDocsUrl';
 
@@ -25,8 +25,29 @@ function App() {
   const [googleDocsUrl, setGoogleDocsUrl] = useState(initialGoogleDocsState.url);
   const [jobDescription, setJobDescription] = useState('');
   const [loading, setLoading] = useState(false);
+  const [extractingJobDescription, setExtractingJobDescription] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(initialGoogleDocsState.error);
+
+  const handleExtractLinkedIn = async (url) => {
+    if (!url.trim()) {
+      setError('Enter a LinkedIn job link to extract its description.');
+      return;
+    }
+
+    setExtractingJobDescription(true);
+    setError(null);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000/api';
+      const response = await axios.post(`${apiUrl}/extract-job-description`, { url: url.trim() });
+      setJobDescription(response.data.job_description);
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.error || 'Unable to extract the job description from that LinkedIn link.');
+    } finally {
+      setExtractingJobDescription(false);
+    }
+  };
 
   const handleTailor = async () => {
     if (!file && !googleDocsUrl.trim()) {
@@ -68,27 +89,29 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] py-16 px-4 sm:px-6 lg:px-8 font-sans selection:bg-blue-100 selection:text-blue-900">
+    <div className="min-h-screen bg-[#f8fafc] py-8 px-4 sm:px-6 lg:h-screen lg:min-h-0 lg:overflow-hidden lg:py-6 lg:px-8 font-sans selection:bg-blue-100 selection:text-blue-900">
       {/* Background Decorative Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-blue-100/50 blur-[120px] rounded-full" />
         <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-indigo-100/50 blur-[120px] rounded-full" />
       </div>
 
-      <div className="max-w-4xl mx-auto relative">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-700 shadow-2xl shadow-blue-500/30 mb-8 transform hover:scale-110 transition-transform duration-500">
-            <FiCpu className="text-4xl text-white" />
+      <div className="max-w-screen-2xl mx-auto relative lg:flex lg:h-full lg:flex-col">
+        <div className="text-center mb-8 lg:mb-5 lg:shrink-0">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 shadow-2xl shadow-blue-500/30 mb-4 transform hover:scale-110 transition-transform duration-500 lg:w-12 lg:h-12 lg:mb-2">
+            <FiCpu className="text-3xl text-white lg:text-2xl" />
           </div>
-          <h1 className="text-5xl font-black text-slate-900 tracking-tight mb-6">
+          <h1 className="text-4xl lg:text-3xl font-black text-slate-900 tracking-tight mb-3 lg:mb-1">
             AI <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Resume Tailor</span>
           </h1>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base lg:text-sm text-slate-600 max-w-2xl mx-auto leading-relaxed">
             Optimize your career trajectory. Upload your resume and let our advanced AI align your skills with your dream job in seconds.
           </p>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl shadow-slate-200/60 border border-white p-8 sm:p-14 mb-10 transition-all duration-500">
+        <div className="grid items-start gap-8 lg:min-h-0 lg:flex-1 lg:grid-cols-2 lg:grid-rows-1 lg:items-stretch lg:gap-6">
+          <section aria-label="Resume and job inputs" tabIndex={0} className="min-w-0 lg:h-full lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain">
+          <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl shadow-slate-200/60 border border-white p-6 sm:p-10 xl:p-12 transition-all duration-500">
           {error && (
             <div className="mb-10 p-5 bg-red-50/80 border border-red-100 text-red-800 rounded-2xl font-medium flex items-center animate-shake">
               <FiAlertCircle className="mr-3 text-xl flex-shrink-0" />
@@ -149,11 +172,16 @@ function App() {
               </span>
             </label>
             
-            <JobDescriptionInput value={jobDescription} onChange={setJobDescription} />
+            <JobDescriptionInput
+              value={jobDescription}
+              onChange={setJobDescription}
+              onExtractLinkedIn={handleExtractLinkedIn}
+              extracting={extractingJobDescription}
+            />
 
             <button
               onClick={handleTailor}
-              disabled={loading}
+              disabled={loading || extractingJobDescription}
               className={`w-full py-5 rounded-2xl font-bold text-xl text-white transition-all duration-500 shadow-xl overflow-hidden relative group ${
                 loading 
                   ? 'bg-slate-400 cursor-not-allowed' 
@@ -176,11 +204,15 @@ function App() {
               </span>
             </button>
           </div>
-        </div>
+          </div>
+          </section>
 
-        <ResultViewer tailoredResume={result} />
+          <section aria-label="Tailored resume preview" tabIndex={0} className="min-w-0 lg:h-full lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain">
+            <ResultViewer tailoredResume={result} loading={loading} />
+          </section>
+        </div>
         
-        <footer className="mt-16 text-center text-slate-400 text-sm font-medium">
+        <footer className="mt-8 text-center text-slate-400 text-sm font-medium lg:mt-3 lg:shrink-0 lg:text-xs">
           Built with advanced AI to help you land your next big role.
         </footer>
       </div>

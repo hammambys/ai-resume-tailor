@@ -1,10 +1,35 @@
 from flask import Blueprint, request, jsonify
+from werkzeug.exceptions import BadRequest
 from services.file_parser import parse_file
 from services.google_docs import GoogleDocsError, fetch_google_doc_text
+from services.linkedin_jobs import LinkedInJobError, fetch_linkedin_job_description
 from services.text_cleaner import clean_text
 from services.ai_engine import tailor_resume
 
 resume_bp = Blueprint('resume', __name__)
+
+@resume_bp.route('/extract-job-description', methods=['POST'])
+def extract_job_description():
+    if not request.is_json:
+        return jsonify({'error': 'Send the LinkedIn job link as JSON.'}), 400
+
+    try:
+        payload = request.get_json()
+    except BadRequest:
+        return jsonify({'error': 'Send valid JSON containing the LinkedIn job link.'}), 400
+    if not isinstance(payload, dict):
+        return jsonify({'error': 'Send the LinkedIn job link as JSON.'}), 400
+
+    job_url = payload.get('url')
+    if not isinstance(job_url, str) or not job_url.strip():
+        return jsonify({'error': 'A LinkedIn job link is required.'}), 400
+
+    try:
+        description = fetch_linkedin_job_description(job_url)
+        return jsonify({'job_description': description})
+    except LinkedInJobError as e:
+        return jsonify({'error': str(e)}), e.status_code
+
 
 @resume_bp.route('/tailor', methods=['POST'])
 def tailor():

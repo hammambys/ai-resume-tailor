@@ -27,6 +27,7 @@ The primary focus is **code simplicity, modular backend design, and efficient AI
 
 ## 2.2 Job Description Input
 - Textarea input field
+- Accept a public LinkedIn job link and extract its job description into the textarea
 - Supports up to 10,000 characters
 - Required for processing
 
@@ -84,7 +85,7 @@ The primary focus is **code simplicity, modular backend design, and efficient AI
 
 1. Upload resume (PDF/TXT) or enter a publicly accessible Google Docs link
 2. System extracts and cleans text
-3. Paste job description
+3. Paste a job description or extract it from a public LinkedIn job link
 4. Click "Tailor Resume"
 5. Backend processes request
 6. AI generates optimized resume

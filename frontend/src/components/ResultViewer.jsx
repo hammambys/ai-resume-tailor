@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { FiDownload, FiCopy, FiCheck } from 'react-icons/fi';
+import { useState } from 'react';
+import { FiDownload, FiCopy, FiCheck, FiFileText } from 'react-icons/fi';
 import ReactMarkdown from 'react-markdown';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import ResumePDFTemplate from './ResumePDFTemplate';
@@ -12,10 +12,11 @@ const resumeTemplates = [
 
 const TEMPLATE_STORAGE_KEY = 'resume-tailor.selectedTemplate';
 
-export default function ResultViewer({ tailoredResume }) {
+export default function ResultViewer({ tailoredResume, loading }) {
   const [copied, setCopied] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [draftResume, setDraftResume] = useState(tailoredResume);
+  const [previousTailoredResume, setPreviousTailoredResume] = useState(tailoredResume);
   const [initialTemplateState] = useState(() => {
     try {
       const savedTemplate = window.localStorage.getItem(TEMPLATE_STORAGE_KEY);
@@ -114,10 +115,11 @@ export default function ResultViewer({ tailoredResume }) {
     return String(val || '');
   };
 
-  useEffect(() => {
+  if (tailoredResume !== previousTailoredResume) {
+    setPreviousTailoredResume(tailoredResume);
     setDraftResume(tailoredResume);
     setIsEditing(false);
-  }, [tailoredResume]);
+  }
 
   // Helper to join sections into a single markdown string
   const getFullMarkdown = () => {
@@ -169,7 +171,38 @@ export default function ResultViewer({ tailoredResume }) {
 
   const getEditorValue = (value) => ensureString(value);
 
-  if (!draftResume) return null;
+  if (!draftResume) {
+    return (
+      <div className="min-w-0 animate-in fade-in duration-500" aria-busy={loading}>
+        <div className="mb-6">
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Tailored Resume</h2>
+          <p className="text-slate-500 font-medium">
+            {loading ? 'Your resume is being tailored.' : 'Your tailored resume will appear here.'}
+          </p>
+        </div>
+        <div className="flex min-h-[420px] flex-col items-center justify-center rounded-[2.5rem] border-2 border-dashed border-slate-200 bg-white/70 p-8 text-center shadow-sm">
+          {loading ? (
+            <svg className="mb-5 h-10 w-10 animate-spin text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0v-4h4z"></path>
+            </svg>
+          ) : (
+            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+              <FiFileText className="text-3xl" />
+            </div>
+          )}
+          <p className="max-w-sm text-lg font-bold text-slate-800">
+            {loading ? 'Generating your resume...' : 'Ready when you are'}
+          </p>
+          <p className="mt-2 max-w-sm text-sm leading-relaxed text-slate-500">
+            {loading
+              ? 'Your tailored resume and PDF download options will show up here.'
+              : 'Add a resume and job description on the left, then generate your tailored resume here.'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const renderSection = (title, content) => {
     if (!content) return null;
@@ -194,7 +227,7 @@ export default function ResultViewer({ tailoredResume }) {
 
 
   return (
-    <div className="mt-20 pt-16 border-t border-slate-200 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+    <div className="min-w-0 animate-in fade-in slide-in-from-bottom-8 duration-1000">
       <div className="mb-6">
         <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Tailored Resume</h2>
         <p className="text-slate-500 font-medium">Your optimized resume is ready for review.</p>
@@ -266,7 +299,7 @@ export default function ResultViewer({ tailoredResume }) {
 
       <div className="relative group">
         <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2.5rem] blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
-        <div className="relative bg-white p-8 sm:p-16 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-50 min-h-[600px]">
+        <div className="relative bg-white p-6 sm:p-8 xl:p-10 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-50 min-h-[600px]">
           {isObject ? (
             <div className="space-y-0">
               {isEditing ? (

@@ -1,6 +1,8 @@
-import React from 'react';
+import { useState } from 'react';
 
-export default function JobDescriptionInput({ value, onChange }) {
+export default function JobDescriptionInput({ value, onChange, onExtractLinkedIn, extracting }) {
+  const [linkedinUrl, setLinkedinUrl] = useState('');
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -8,6 +10,31 @@ export default function JobDescriptionInput({ value, onChange }) {
         <span className={`text-xs font-bold px-3 py-1 rounded-full transition-colors duration-300 ${value.length > 0 ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
           {value.length.toLocaleString()} / 10,000 characters
         </span>
+      </div>
+      <div className="space-y-3 rounded-2xl border border-blue-100 bg-blue-50/50 p-5">
+        <label htmlFor="linkedin-job-url" className="block">
+          <span className="mb-2 block text-sm font-bold text-slate-700">Use a LinkedIn job link instead</span>
+          <input
+            id="linkedin-job-url"
+            type="url"
+            value={linkedinUrl}
+            onChange={(event) => setLinkedinUrl(event.target.value)}
+            placeholder="https://www.linkedin.com/jobs/view/..."
+            autoComplete="url"
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+          />
+        </label>
+        <button
+          type="button"
+          onClick={() => onExtractLinkedIn(linkedinUrl)}
+          disabled={extracting || !linkedinUrl.trim()}
+          className="rounded-xl bg-blue-600 px-4 py-2 font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+        >
+          {extracting ? 'Extracting description...' : 'Extract description'}
+        </button>
+        <p className="text-sm text-slate-500">
+          The job must be publicly accessible. The extracted text will appear below so you can review or edit it.
+        </p>
       </div>
       <div className="relative group">
         <textarea
